@@ -1,0 +1,8 @@
+<table>
+  <thead>
+    <tr>
+      <th>{{name}}</th>
+      <th>{{url}}</th>
+    </tr>
+  </thead>
+</table>

@@ -2,10 +2,85 @@
 <html>
   <head>
     <title>{{ title }}</title>
+    <link rel='stylesheet' href='/vendor/font-awesome/css/font-awesome.min.css' />
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <h1>{{ title }}</h1>
-    <p>Welcome to {{ title }}</p>
+    <div class="container">
+      <h1>{{ title }}</h1>
+      <p>The Collection of Gitbuilder</p>
+      {{#sources}}
+      <table class="project" data-url="{{url}}">
+        <thead>
+          <tr>
+            <th width="200">{{name}}</th>
+            <th colspan="3"><a href="{{url}}" target="_blank">{{url}}</a></th>
+          </tr>
+          <tr>
+            <th width="200">#Latest 5</th>
+            <th width="200">Branch/Tag</th>
+            <th width="200">Status</th>
+            <th width="400">Commit Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="loaders-wrap">
+          <td colspan="4" class="loaders"><span class="loader loader-quart"></td>
+          </td>
+        </tbody>
+      </table>
+      {{/sources}}
+    </div>
+    <script src="/vendor/jquery.min.js"></script>
+    <script src="/vendor/micro-templating.js"></script>
+    <script type="text/html" id="item_tmpl">
+      <tr>
+        <td><%=index%></td>
+        <td><%=branch%></td>
+        <td>
+          <a class="text-<%=style%>" href="<%=url%><%=statusUrl%>" target="_blank">
+            <i class="icon fa fa-<%=icon%>"></i>
+            <%=status%>
+          </a>
+        </td>
+        <td><%=message%></td>
+      </tr>
+    </script>
+    <script>
+      $(function() {
+        var projects = Array.prototype.slice.call($('.project'));
+        projects.forEach(function(table) {
+          var $table = $(table);
+          var $tbody = $table.find('tbody');
+          var url = $table.data('url');
+          $.get('/api?url=' + url, function(data) {
+            $tbody.find('.loaders-wrap').remove();
+            data.results.forEach(function(json, index) {
+              json.index = index + 1;
+              if (json.status.indexOf('ok') > -1) {
+                json.icon = 'check-circle';
+                json.style = 'success';
+                if (index === 0) {
+                  $table.addClass('project-success');
+                }
+              } else if (json.status.indexOf('Warning') > -1) {
+                json.icon = 'exclamation-circle';
+                json.style = 'warning';
+                if (index === 0) {
+                  $table.addClass('project-warning');
+                }
+              } else if (json.status.indexOf('Error') > -1) {
+                json.icon = 'times-circle';
+                json.style = 'danger';
+                if (index === 0) {
+                  $table.addClass('project-danger');
+                }
+              }
+              $tbody.append(tmpl("item_tmpl", json));
+            });
+          });
+        });
+      });
+    </script>
   </body>
 </html>
